@@ -66,6 +66,10 @@ describe("CollateralizedLoan", function () {
       // Loading the fixture
       // TODO: Set up test for claiming collateral
       // HINT: Simulate the passage of time if necessary
+      const {myCLoan,publisher, lender, borrower} = await loadFixture(deployCollateralizedLoanFixture);
+      await myCLoan.connect(borrower).depositCollateralAndRequestLoan(5,0, {value:ethers.parseEther("1")});
+      await myCLoan.connect(lender).fundLoan(1,{value:ethers.parseEther("0.8")});
+      await myCLoan.connect(lender).fnClaimCollateral(1);
     });
   });
 });
