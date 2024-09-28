@@ -5,7 +5,8 @@ This project demonstrates a basic Hardhat use case. It comes with a sample contr
 Try running some of the following tasks:
 
 Sepolia ether scan contract
-https://sepolia.etherscan.io/address/0x21073b6Ed3e943EE5818d60dF759BBABaCc1Fcaf
+https://sepolia.etherscan.io/address/0x1d1e048fb2b68d22cbe9179c11a9c0bdfb520a1f
+
 
 ```shell
 npx hardhat help
