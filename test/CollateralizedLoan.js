@@ -69,7 +69,10 @@ describe("CollateralizedLoan", function () {
       const {myCLoan,publisher, lender, borrower} = await loadFixture(deployCollateralizedLoanFixture);
       await myCLoan.connect(borrower).depositCollateralAndRequestLoan(5,0, {value:ethers.parseEther("1")});
       await myCLoan.connect(lender).fundLoan(1,{value:ethers.parseEther("0.8")});
+      await myCLoan.connect(borrower).withdrawLoan(1);
+      
       await myCLoan.connect(lender).fnClaimCollateral(1);
+      
     });
   });
 });

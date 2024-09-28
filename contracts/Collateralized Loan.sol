@@ -22,6 +22,8 @@ contract CollateralizedLoan {
     // Create a mapping to manage the loans
     mapping(uint => Loan) public loans;
     uint public nextLoanId;
+    address public owner;
+
 
     // Hint: Define events for loan requested, funded, repaid, and collateral claimed
     //Allow users to deposit ETH as collateral and request a loan.
@@ -111,16 +113,19 @@ contract CollateralizedLoan {
         require(block.timestamp <= loan.dueDate, "The dueDate expire");
                 
         //Pay to the lender
-        address payable _to = payable(loans[loanId].lender);
+        address payable _to = payable(loan.lender);
         (bool sent, bytes memory data) = _to.call{value: msg.value}("");
         require(sent, "Failed to send Ether to lender");
 
         loan.isRepaid = true;
 
         //send back the collateral to the borrower
-        _to = payable(loans[loanId].borrower);
-        (sent, data) = _to.call{value: msg.value}("");
+        _to = payable(loan.borrower);
+        (sent, data) = _to.call{value: loan.collateralAmount }("");
         require(sent, "Failed to send Ether to borrower");
+
+        loan.collateralAmount = 0;
+        loan.returnAmount = 0;
 
         emit repaid(loanId,msg.sender);
     }
@@ -135,10 +140,10 @@ contract CollateralizedLoan {
         require(!loan.isRepaid, "The loan was paid");
         //Pay to the lender
         address payable _to = payable(loan.lender);
-        (bool sent, bytes memory data) = _to.call{value: loan.collateralAmount}("");
+        (bool sent, bytes memory data) = _to.call{value: loan.collateralAmount }("");
         require(sent, "Failed to send Ether to lender");
 
-        loan.collateralAmount = 0;
+        //loan.collateralAmount = 0;
         loan.lender = payable(address(0));
         emit collateralClaimed(loanId);
     }
@@ -155,11 +160,22 @@ contract CollateralizedLoan {
     // Fallback function is called when msg.data is not empty
     fallback() external payable {}
 
-    function withdrawLoan(uint loanId) payable public loanFunded(loanId)  {
+    constructor () {
+    owner = msg.sender;
+    }
+
+    function withdrawLoan(uint loanId) payable public {
         Loan storage loan = loans[loanId];
-	    require(msg.sender == loan.borrower);
+        require(loan.isFunded, "The loan is not yet funded");
+	    require(msg.sender == loan.borrower, "Only the borrower can withdraw the loan");
 	    //payable(msg.sender).transfer(address(this).balance);
         payable(msg.sender).transfer(loan.loanAmout);
     }
     
+    /* Only owner can remove, in case contract still have money */
+    function withdraw() payable public 
+    {
+	    require(msg.sender == owner);
+	    payable(msg.sender).transfer(address(this).balance);
+    }
 }
